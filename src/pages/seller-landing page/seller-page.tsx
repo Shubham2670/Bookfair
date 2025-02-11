@@ -17,7 +17,6 @@ import {
 } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useFormik } from "formik";
 import OrderPage from "./order-page";
 import { validationSchema } from "./utils";
@@ -128,7 +127,7 @@ const SellerDashboard = () => {
       await axiosInstance.delete(`http://localhost:3000/orders/${orderId}`);
   
       setOrders((prevOrders) =>
-        prevOrders.filter((order) => order.id !== orderId)
+        prevOrders.filter((order:any) => order.id !== orderId)
       );
   
       // Update localStorage (if needed)
