@@ -11,8 +11,6 @@ import {
   AlertTitle,
   CircularProgress,
 } from "@mui/material";
-// import lginimage from "../assets/images/4957136.jpg";
-// import loginbg from "../assets/images/4957136.jpg"
 import lginimage from "../../assets/images/4957136.jpg"
 import loginbg from '../../assets/images/login bg.jpg'
 const LoginPage: React.FC = () => {

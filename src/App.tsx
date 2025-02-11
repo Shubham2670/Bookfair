@@ -1,7 +1,5 @@
-import "./App.css";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import HomePage from "./components/Homepage";
-import SellerModule from "./pages/Sellermodule";
 import Header from "./components/Header";
 import RegisterBuyer from "./pages/buyer-registration page/BuyerRegister";
 import SellerRegister from "./pages/seller-registeration page/SellerRegister";
@@ -13,6 +11,7 @@ import SellerDashboard from "./pages/seller-landing page/seller-page";
 import ProtectedRoute from "./contexts/PrivateRoute";
 import { Roles } from "./types";
 import LoginPage from "./pages/login-page/loginpage";
+import Profile from "./pages/profile-page/profile";
 
 function App() {
   return (
@@ -29,14 +28,7 @@ function App() {
               <Route path="/register-seller" element={<SellerRegister />} />
 
               {/* Protected Routes */}
-              <Route
-                path="/seller"
-                element={
-                  <ProtectedRoute allowedRoles={[Roles.SELLER]}>
-                    <SellerModule />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/profile" element={<Profile />} />
               <Route
                 path="/buyer-dashboard"
                 element={

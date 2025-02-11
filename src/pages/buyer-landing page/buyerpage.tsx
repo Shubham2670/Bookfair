@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useCart } from "../../contexts/Cart-Context";
 import {
   Button,
@@ -21,10 +21,10 @@ import { useNavigate } from "react-router-dom";
 import { Footer } from "../../common-components";
 import SearchIcon from "@mui/icons-material/Search";
 import { Snackbar, Alert } from "@mui/material";
-import axios from "axios";
 import { axiosInstance } from "../../services/api-instance";
 
 interface Book {
+  quantity: ReactNode;
   id: number;
   title: string;
   author: string;
@@ -40,38 +40,34 @@ export const BuyerPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAuthor, setSelectedAuthor] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 5000]); // Default price range
+  const [priceRange, setPriceRange] = useState([0, 5000]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
 
   const handleAddToCart = (book: Book) => {
     addToCart(book);
-    setOpenSnackbar(true); 
+    setOpenSnackbar(true);
   };
-
-  // Snackbar ko close karne ka function
+  console.log(books, "books");
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
   useEffect(() => {
     const fetchBooks = async () => {
-        try {
-          const response = await axiosInstance.get("/addbooks");
-          setBooks(response.data);
-        } catch (error) {
-          console.error("Error fetching books:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      fetchBooks();
+      try {
+        const response = await axiosInstance.get("/addbooks");
+        setBooks(response.data);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
   }, []);
 
-  // Unique authors ka list banane ke liye
   const authors = Array.from(new Set(books.map((book) => book.author)));
-
-  // Filtered books logic
   const filteredBooks = books.filter((book) => {
     const matchesSearch =
       book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,9 +85,9 @@ export const BuyerPage = () => {
     <div className="min-h-screen bg-gray-100 p-8 px-2 md:px-8 py-6  mt-[48px]">
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={2000} 
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }} 
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
@@ -208,7 +204,7 @@ export const BuyerPage = () => {
           </Typography>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           {filteredBooks.map((book) => (
             <Card
               key={book.id}
@@ -252,15 +248,18 @@ export const BuyerPage = () => {
 
                   <Typography
                     variant="h6"
-                    className="mt-2 font-bold text-gray-900"
+                    className="mt-2 font-bold text-gray-900 flex items-center gap-2"
                   >
-                    ₹{book.price}{" "}
+                    ₹{book.price}
                     <span className="text-gray-500 text-sm line-through">
                       ₹{book.mrp}
                     </span>
                     <span className="text-green-600 text-sm">
                       ({book.discount}% off)
                     </span>
+                    {/* <span className="px-2 py-1 bg-gray-200 text-gray-800 rounded-md text-xs font-medium">
+                      Qty: {book.quantity}
+                    </span> */}
                   </Typography>
                 </div>
 

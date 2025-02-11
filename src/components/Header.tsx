@@ -33,7 +33,6 @@ const Header: React.FC = () => {
     user?.role === "seller" ? "Become a Buyer" : "Become a Seller";
   const roleBasedLink =
     user?.role === "seller" ? "/register-buyer" : "/register-seller";
-
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     setUserRole(role);
@@ -60,16 +59,9 @@ const Header: React.FC = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-6">
-          {/* Back to Homepage Button */}
-          {/* <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate("/")}
-          >
-            Back to Homepage
-          </Button> */}
-
+          <Link to="/" className="text-lg text-white font-medium">
+            Home
+          </Link>
           <Link to={roleBasedLink} className="text-lg text-white font-medium">
             {roleBasedText}
           </Link>
@@ -88,6 +80,9 @@ const Header: React.FC = () => {
                   <Link
                     to="/profile"
                     className="block px-4 py-2 hover:bg-gray-200"
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                    }}
                   >
                     Your Profile
                   </Link>
@@ -114,14 +109,16 @@ const Header: React.FC = () => {
           )}
 
           {/* Cart Icon */}
-          <Link to="/cart-item" className="relative">
-            <ShoppingCartIcon />
-            {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 rounded-full">
-                {cart.length}
-              </span>
-            )}
-          </Link>
+          {user?.role === "buyer" && (
+            <Link to="/cart-item" className="relative">
+              <ShoppingCartIcon />
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 rounded-full">
+                  {cart.length}
+                </span>
+              )}
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -148,18 +145,6 @@ const Header: React.FC = () => {
           </button>
 
           {/* Back to Homepage Button in Mobile Menu */}
-
-          {/* <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => {
-              navigate("/");
-              setIsMobileMenuOpen(false);
-            }}
-          >
-            Back to Homepage
-          </Button> */}
 
           <Link
             to="/"

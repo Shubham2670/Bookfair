@@ -11,6 +11,7 @@ interface AuthContextType {
 }
 
 interface User {
+  avatar: string;
   name: ReactNode;
   isRegistered: boolean;
   id: number;

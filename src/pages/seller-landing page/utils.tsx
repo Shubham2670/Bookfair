@@ -12,6 +12,9 @@ export const validationSchema = Yup.object({
       .min(0, "Discount cannot be negative")
       .max(100, "Discount cannot be more than 100%"),
     image: Yup.string().required("Book image is required"),
+    quantity: Yup.number()
+    .min(1, "Quantity must be at least 1") 
+    .required("Quantity is required"),
   });
 
   

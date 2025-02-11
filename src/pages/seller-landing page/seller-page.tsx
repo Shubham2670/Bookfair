@@ -17,30 +17,21 @@ import {
 } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useFormik } from "formik";
 import OrderPage from "./order-page";
 import { validationSchema } from "./utils";
 import { axiosInstance } from "../../services/api-instance";
+import { Book } from "../../types";
 
 const SellerDashboard = () => {
-  const [books, setBooks] = useState<
-    {
-      title: string;
-      author: string;
-      price: number;
-      mrp: number;
-      discount: number;
-      image: string;
-    }[]
-  >([]);
+  const [books, setBooks] = useState<Book[]>([]);
   const [orders, setOrders] = useState<string[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
-
+ console.log(books,"books")
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
@@ -77,6 +68,7 @@ const SellerDashboard = () => {
         mrp: 0,
         discount: 0,
         image: "",
+        quantity:0
       },
     });
     setOpen(true);
@@ -90,6 +82,7 @@ const SellerDashboard = () => {
       mrp: 0,
       discount: 0,
       image: "",
+      quantity: 1,
     },
 
     validationSchema,
@@ -126,28 +119,26 @@ const SellerDashboard = () => {
   const handleDelete = async (orderId: string | number) => {
     try {
       await axiosInstance.delete(`http://localhost:3000/orders/${orderId}`);
-  
+
       setOrders((prevOrders) =>
-        prevOrders.filter((order) => order.id !== orderId)
+        prevOrders.filter((order: any) => order.id !== orderId)
       );
-  
+
       // Update localStorage (if needed)
       const updatedOrders = JSON.stringify(
         JSON.parse(localStorage.getItem("orders") || "[]").filter(
           (order: { id: string | number }) => order.id !== orderId
         )
       );
-  
+
       localStorage.setItem("orders", updatedOrders);
-  
+
       console.log(`Order with ID ${orderId} deleted successfully`);
     } catch (error) {
       console.error("Error deleting order:", error);
     }
   };
-  
-  
-  
+
   useEffect(() => {
     const savedBooks = localStorage.getItem("books");
     if (savedBooks) {
@@ -164,7 +155,6 @@ const SellerDashboard = () => {
         console.error("Error fetching orders:", error);
       });
   }, []);
-  
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8  mt-[48px]">
@@ -321,6 +311,17 @@ const SellerDashboard = () => {
               {...formik.getFieldProps("discount")}
               error={formik.touched.discount && Boolean(formik.errors.discount)}
               helperText={formik.touched.discount && formik.errors.discount}
+            />
+            {/* Quantity Field */}
+            <TextField
+              label="Quantity"
+              type="number"
+              fullWidth
+              variant="outlined"
+              {...formik.getFieldProps("quantity")}
+              error={formik.touched.quantity && Boolean(formik.errors.quantity)}
+              helperText={formik.touched.quantity && formik.errors.quantity}
+              inputProps={{ min: 1 }} // Ensure quantity is at least 1
             />
             <div className="flex flex-col items-center">
               <label className="cursor-pointer w-full flex items-center justify-center border-dashed border-2 border-gray-300 rounded-lg p-4 hover:border-blue-500 transition">

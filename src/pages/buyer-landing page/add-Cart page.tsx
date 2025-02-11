@@ -39,8 +39,10 @@ const CartPage: React.FC = () => {
         <Button
           startIcon={<ArrowBack />}
           onClick={() => navigate("/buyer-dashboard")}
-          variant="text"
-          color="primary"
+            variant="outlined"
+          className="text-white border-white px-4 py-2 rounded-lg 
+          hover:bg-indigo-800 active:bg-indigo-600
+          transition-all duration-300"
         >
           Back to Books Dashboard
         </Button>

@@ -24,3 +24,14 @@ export  interface OrdersListProps {
     orders: Order[];
     onDelete: (orderId: string | number) => void;
   }  
+
+  export interface Book {
+    title: string;
+    author: string;
+    price: number;
+    mrp: number;
+    discount: number;
+    image: string;
+    quantity?: number; 
+  }
+  
