@@ -13,6 +13,8 @@ import SellerDashboard from "./pages/seller-landing page/seller-page";
 import ProtectedRoute from "./contexts/PrivateRoute";
 import { Roles } from "./types";
 import LoginPage from "./pages/login-page/loginpage";
+import Profile from "./pages/profile-page/profile";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -27,7 +29,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register-buyer" element={<RegisterBuyer />} />
               <Route path="/register-seller" element={<SellerRegister />} />
-
+              <Route path="/profile" element={<Profile />} />
               {/* Protected Routes */}
               <Route
                 path="/seller"
@@ -72,6 +74,9 @@ function App() {
               <Route path="*" element={<HomePage />} />
             </Routes>
           </main>
+          <div className="fixed  bottom-0 w-full h-[120px]">
+            <Footer />
+          </div>
         </CartProvider>
       </AuthProvider>
     </Router>

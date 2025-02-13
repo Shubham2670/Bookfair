@@ -11,10 +11,9 @@ import {
   AlertTitle,
   CircularProgress,
 } from "@mui/material";
-// import lginimage from "../assets/images/4957136.jpg";
-// import loginbg from "../assets/images/4957136.jpg"
-import lginimage from "../../assets/images/4957136.jpg"
-import loginbg from '../../assets/images/login bg.jpg'
+import lginimage from "../../assets/images/4957136.jpg";
+import loginbg from "../../assets/images/login bg.jpg";
+
 const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -28,24 +27,27 @@ const LoginPage: React.FC = () => {
   const formik = useFormik({
     initialValues: {
       email: "",
+      password: "",
     },
     validationSchema: Yup.object({
       email: Yup.string()
         .email("Invalid email format")
         .required("Email is required"),
+      password: Yup.string().required("Password is required"),
     }),
     onSubmit: async (values) => {
       setLoading(true);
       try {
-        await login(values.email);
+         await login(values.email, values.password); 
         setSnackbarMessage("Login successful! Redirecting...");
         setSnackbarSeverity("success");
+        setOpenSnackbar(true);
       } catch (error) {
         setSnackbarMessage("Login failed. Please try again.");
         setSnackbarSeverity("error");
+        setOpenSnackbar(true);
       } finally {
         setLoading(false);
-        setOpenSnackbar(true);
       }
     },
   });
@@ -55,7 +57,7 @@ const LoginPage: React.FC = () => {
       className="flex items-center justify-center min-h-screen bg-gray-100 p-4"
       style={{ backgroundImage: `url(${loginbg})` }}
     >
-      <div className="relative w-full max-w-3xl bg-white shadow-lg rounded-2xl p-6 flex flex-col md:flex-row overflow-hidden">
+      <div className="relative w-full max-w-3xl bg-customWhite shadow-lg rounded-2xl p-6 flex flex-col md:flex-row overflow-hidden">
         <div
           className="hidden md:block md:w-1/2 bg-cover bg-center"
           style={{ backgroundImage: `url(${lginimage})` }}
@@ -77,7 +79,19 @@ const LoginPage: React.FC = () => {
               onChange={formik.handleChange}
               error={formik.touched.email && Boolean(formik.errors.email)}
               helperText={formik.touched.email && formik.errors.email}
-              className="bg-white rounded-lg"
+              className="bg-customWhite rounded-lg"
+            />
+            <TextField
+              label="Password"
+              variant="outlined"
+              type="password"
+              fullWidth
+              name="password"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              error={formik.touched.password && Boolean(formik.errors.password)}
+              helperText={formik.touched.password && formik.errors.password}
+              className="bg-customWhite rounded-lg"
             />
 
             <Button
@@ -85,7 +99,7 @@ const LoginPage: React.FC = () => {
               variant="contained"
               fullWidth
               disabled={loading}
-              className="h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
+              className="h-12 bg-customBlue hover:bg-customBlue text-customWhite font-semibold rounded-lg transition"
             >
               {loading ? (
                 <CircularProgress size={24} color="inherit" />
@@ -95,12 +109,11 @@ const LoginPage: React.FC = () => {
             </Button>
           </form>
 
-         
           <p className="text-center text-gray-600 mt-4">
             Become a Buyer?
             <span
               onClick={() => navigate("/register-buyer")}
-              className="text-blue-600 cursor-pointer hover:underline ml-1"
+              className="text-customBlue cursor-pointer hover:underline ml-1"
             >
               Create Your Account
             </span>

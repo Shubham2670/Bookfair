@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/Cart-Context";
 import { Button, IconButton, Snackbar } from "@mui/material";
 import { Delete, Remove, Add, ArrowBack } from "@mui/icons-material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const CartPage: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
@@ -20,7 +20,6 @@ const CartPage: React.FC = () => {
         },
         body: JSON.stringify({ items: cart, date: new Date().toISOString() }),
       });
-
       if (response.ok) {
         clearCart(); 
         setOpenSnackbar(true); 

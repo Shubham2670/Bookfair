@@ -1,16 +1,24 @@
 import axios from "axios";
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { axiosInstance } from "../services/api-instance";
 
 interface AuthContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  login: (email: string) => void;
+  login: any;
   logout: () => void;
 }
 
 interface User {
+  password: string;
+  avatar: string;
   name: ReactNode;
   isRegistered: boolean;
   id: number;
@@ -20,17 +28,18 @@ interface User {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
-  const location = useLocation(); 
+  const location = useLocation();
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
 
-      // Only redirect if the user is on the login page
       if (location.pathname === "/login") {
         if (parsedUser.role === "buyer") {
           navigate("/buyer-dashboard", { replace: true });
@@ -39,36 +48,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       }
     }
-  }, [location.pathname, navigate, setUser])
-  
-  const login = async (email: string) => {
+  }, [location.pathname, navigate, setUser]);
+
+  const login = async (email: string, password: string) => {
     try {
-      const response = await axiosInstance.get(`http://localhost:3000/users?email=${email}`);
+      const response = await axiosInstance.get(
+        `/users?email=${email}&password=${password}`
+      );
       if (response.data.length > 0) {
         const loggedInUser: User = response.data[0];
+        console.log(loggedInUser, "logged user");
         setUser(loggedInUser);
+        console.log("loggedInUser: ", loggedInUser);
         localStorage.setItem("user", JSON.stringify(loggedInUser));
+
         if (loggedInUser.role === "buyer") {
           navigate("/buyer-dashboard");
         } else if (loggedInUser.role === "seller") {
           navigate("/seller-dashboard");
         }
+      } else {
+        console.error("Invalid credentials");
       }
     } catch (error) {
       console.error("Error logging in:", error);
     }
   };
 
-//   const logout = () => {
-//     setUser(null);
-//     localStorage.removeItem("user");
-//     navigate("/login");
-//   };
-const logout = async () => {
+  const logout = async () => {
     if (user) {
       try {
         await axiosInstance.patch(`http://localhost:3000/users/${user.id}`, {
-          isLoggedIn: false
+          isLoggedIn: false,
         });
       } catch (error) {
         console.error("Error logging out from server:", error);

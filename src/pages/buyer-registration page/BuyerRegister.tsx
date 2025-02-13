@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { Alert, AlertTitle, Snackbar } from "@mui/material";
+import { Alert, AlertTitle, Snackbar, TextField } from "@mui/material";
 import bgimage from "../../assets/images/register3456.jpg";
 import bgimg from "../../assets/images/12345.avif";
 import { axiosInstance } from "../../services/api-instance";
+
 const RegisterBuyer: React.FC = () => {
   const navigate = useNavigate();
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
@@ -21,12 +21,20 @@ const RegisterBuyer: React.FC = () => {
     initialValues: {
       name: "",
       email: "",
+      password: "",
+      confirmPassword: "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Name is required"),
       email: Yup.string()
         .email("Invalid email format")
         .required("Email is required"),
+      password: Yup.string()
+        .min(6, "Password must be at least 6 characters")
+        .required("Password is required"),
+      confirmPassword: Yup.string()
+        .oneOf([Yup.ref("password")], "Passwords must match")
+        .required("Confirm Password is required"),
     }),
     onSubmit: async (values) => {
       try {
@@ -34,6 +42,7 @@ const RegisterBuyer: React.FC = () => {
         const existingUser = response.data.find(
           (user: { email: string }) => user.email === values.email
         );
+
         if (existingUser) {
           setSnackbarMessage("Email already registered! Please log in.");
           setSnackbarSeverity("error");
@@ -43,8 +52,10 @@ const RegisterBuyer: React.FC = () => {
             role: "buyer",
             isRegistered: true,
           });
+
           setSnackbarMessage("Buyer account created successfully!");
           setSnackbarSeverity("success");
+
           setTimeout(() => navigate("/login"), 2000);
         }
         setOpenSnackbar(true);
@@ -63,7 +74,7 @@ const RegisterBuyer: React.FC = () => {
       className="flex justify-center items-center min-h-screen bg-cover bg-center"
       style={{ backgroundImage: `url(${bgimage})` }}
     >
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl relative flex flex-col md:flex-row items-center">
+      <div className="bg-customWhite rounded-lg shadow-lg p-8 w-full max-w-2xl relative flex flex-col md:flex-row items-center">
         {/* Left Side Image */}
         <div className="w-full md:w-1/2 flex justify-center">
           <img
@@ -75,58 +86,81 @@ const RegisterBuyer: React.FC = () => {
 
         {/* Right Side Form */}
         <div className="w-full md:w-1/2 flex flex-col items-center">
-          <h2 className="text-3xl font-bold text-center text-blue-600">
+          <h2 className="text-3xl font-bold text-center text-customIndigo">
             Register as a Buyer
           </h2>
+
           <form
             onSubmit={formik.handleSubmit}
             className="mt-6 w-full grid grid-cols-1 gap-4"
           >
-            <input
+            <TextField
+              label="Full name"
+              variant="outlined"
               type="text"
+              fullWidth
               name="name"
-              className={`w-full px-4 py-2 border rounded-md ${
-                formik.touched.name && formik.errors.name
-                  ? "border-red-500"
-                  : "border-gray-300"
-              }`}
-              placeholder="Full Name"
               value={formik.values.name}
               onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
+              error={formik.touched.name && Boolean(formik.errors.name)}
+              helperText={formik.touched.name && formik.errors.name}
+              className="bg-customWhite rounded-lg"
             />
-            {formik.touched.name && formik.errors.name && (
-              <p className="text-red-500 text-sm mt-1">{formik.errors.name}</p>
-            )}
-            <input
+            <TextField
+              label="Email"
+              variant="outlined"
               type="email"
+              fullWidth
               name="email"
-              className={`w-full px-4 py-2 border rounded-md ${
-                formik.touched.email && formik.errors.email
-                  ? "border-red-500"
-                  : "border-gray-300"
-              }`}
-              placeholder="Email Address"
               value={formik.values.email}
               onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
+              error={formik.touched.email && Boolean(formik.errors.email)}
+              helperText={formik.touched.email && formik.errors.email}
+              className="bg-customWhite rounded-lg"
             />
-            {formik.touched.email && formik.errors.email && (
-              <p className="text-red-500 text-sm mt-1">{formik.errors.email}</p>
-            )}
+
+            <TextField
+              label="Password"
+              variant="outlined"
+              type="password"
+              fullWidth
+              name="password"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              error={formik.touched.email && Boolean(formik.errors.password)}
+              helperText={formik.touched.email && formik.errors.password}
+              className="bg-customWhite rounded-lg"
+            />
+
+            <TextField
+              label="ConfirmPassword"
+              variant="outlined"
+              type="password"
+              fullWidth
+              name="confirmPassword"
+              value={formik.values.confirmPassword}
+              onChange={formik.handleChange}
+              error={
+                formik.touched.email && Boolean(formik.errors.confirmPassword)
+              }
+              helperText={formik.touched.email && formik.errors.confirmPassword}
+              className="bg-customWhite rounded-lg"
+            />
+
             <div className="flex justify-center mt-4">
               <button
                 type="submit"
-                className="w-24 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+                className="w-24 bg-customIndigo text-customWhite py-2 rounded-md hover:bg-customIndigo transition"
               >
                 Register
               </button>
             </div>
           </form>
+
           <p className="text-sm text-gray-600 mt-4">
             Already have an account?{" "}
             <span
-              className="text-blue-600 cursor-pointer hover:underline"
+              className="text-customIndigo cursor-pointer hover:underline"
               onClick={() => navigate("/login")}
             >
               Log in

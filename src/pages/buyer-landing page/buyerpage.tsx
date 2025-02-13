@@ -18,21 +18,10 @@ import {
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import { Footer } from "../../common-components";
 import SearchIcon from "@mui/icons-material/Search";
 import { Snackbar, Alert } from "@mui/material";
-import axios from "axios";
-import { axiosInstance } from "../../services/api-instance";
-
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  price: number;
-  mrp: number;
-  discount: number;
-  image: string;
-}
+import { axiosInstance, Bookslisting } from "../../services/api-instance";
+import { Book } from "../../types";
 
 export const BuyerPage = () => {
   const { addToCart } = useCart();
@@ -40,13 +29,26 @@ export const BuyerPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAuthor, setSelectedAuthor] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 5000]); // Default price range
+  const [priceRange, setPriceRange] = useState([0, 2000]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [addedToCart, setAddedToCart] = useState<Set<number>>(new Set());
   const navigate = useNavigate();
 
   const handleAddToCart = (book: Book) => {
     addToCart(book);
-    setOpenSnackbar(true); 
+    setOpenSnackbar(true);
+    setAddedToCart((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(book.id);
+      return newSet;
+    });
+    setTimeout(() => {
+      setAddedToCart((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(book.id);
+        return newSet;
+      });
+    }, 2000);
   };
 
   // Snackbar ko close karne ka function
@@ -55,23 +57,22 @@ export const BuyerPage = () => {
   };
   useEffect(() => {
     const fetchBooks = async () => {
-        try {
-          const response = await axiosInstance.get("/addbooks");
-          setBooks(response.data);
-        } catch (error) {
-          console.error("Error fetching books:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      fetchBooks();
+      try {
+        const response = await Bookslisting();
+        setBooks(response);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
   }, []);
 
   // Unique authors ka list banane ke liye
   const authors = Array.from(new Set(books.map((book) => book.author)));
 
-  // Filtered books logic
   const filteredBooks = books.filter((book) => {
     const matchesSearch =
       book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,9 +90,9 @@ export const BuyerPage = () => {
     <div className="min-h-screen bg-gray-100 p-8 px-2 md:px-8 py-6  mt-[48px]">
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={2000} 
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }} 
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
@@ -249,6 +250,21 @@ export const BuyerPage = () => {
                     size="small"
                     className="mt-2"
                   />
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={1.5}
+                    mt={1}
+                    className="bg-gray-100 px-3 py-1  shadow-sm"
+                  >
+                    <Rating value={4.5} precision={0.5} readOnly size="small" />
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    className="font-semibold bg-gray-100 text-gray-800 px-3 py-1  shadow-sm text-sm tracking-wide"
+                  >
+                    🛒 Stock: {book.quantity}
+                  </Typography>
 
                   <Typography
                     variant="h6"
@@ -271,17 +287,15 @@ export const BuyerPage = () => {
                   variant="contained"
                   color="warning"
                   startIcon={<ShoppingCartIcon />}
+                  disabled={addedToCart.has(book.id)}
                 >
-                  Add to Cart
+                  {addedToCart.has(book.id) ? "Added" : "Add to Cart"}
                 </Button>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
-      <div className="fixed bottom-0 left-0 w-full bg-white shadow-md">
-        <Footer />
-      </div>
     </div>
   );
 };

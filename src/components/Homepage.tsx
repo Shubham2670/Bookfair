@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import books from "../assets/images/140805-776043754_medium.mp4";
 import { booksData } from "../pages/utils/utils";
-import { Footer } from "../common-components";
 import { useAuth } from "../contexts/AuthContext";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const isBuyerLoggedIn = localStorage.getItem("userRole") === "buyer";
+  // const isBuyerLoggedIn = localStorage.getItem("userRole") === "buyer";
   const { user } = useAuth();
   const roleBasedText =
     user?.role === "seller" ? "Become a Buyer" : "Become a Seller";
@@ -47,13 +46,13 @@ const HomePage: React.FC = () => {
           <Link to={roleBasebuttonroute}>
             <button
               onClick={handleBrowseBooks}
-              className="bg-green-500 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition w-full sm:w-auto"
+              className="bg-customGreen text-white py-3 px-6 rounded-lg hover:bg-green-700 transition w-full sm:w-auto"
             >
              {roleBasedbutton}
             </button>
             </Link> 
             <Link to={roleBasedLink}>
-              <button className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto mt-4 sm:mt-0">
+              <button className="bg-customIndigo text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto mt-4 sm:mt-0">
                 {roleBasedText}
               </button>
             </Link>
@@ -88,9 +87,6 @@ const HomePage: React.FC = () => {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 };

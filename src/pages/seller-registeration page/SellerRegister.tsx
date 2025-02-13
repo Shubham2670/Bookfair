@@ -11,22 +11,26 @@ const SellerRegister: React.FC = () => {
   const navigate = useNavigate();
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success"
-  );
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
   const formik = useFormik({
     initialValues: {
       name: "",
       email: "",
       shopName: "",
+      password: "",
+      confirmPassword: "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Seller name is required"),
-      email: Yup.string()
-        .email("Invalid email format")
-        .required("Email is required"),
+      email: Yup.string().email("Invalid email format").required("Email is required"),
       shopName: Yup.string().required("Shop name is required"),
+      password: Yup.string()
+        .min(6, "Password must be at least 6 characters")
+        .required("Password is required"),
+      confirmPassword: Yup.string()
+        .oneOf([Yup.ref("password")], "Passwords must match")
+        .required("Confirm password is required"),
     }),
     onSubmit: async (values) => {
       try {
@@ -53,6 +57,7 @@ const SellerRegister: React.FC = () => {
       }
     },
   });
+
   const handleSnackbarClose = () => setOpenSnackbar(false);
 
   return (
@@ -61,16 +66,9 @@ const SellerRegister: React.FC = () => {
       style={{ backgroundImage: `url(${serllerbg})` }}
     >
       <div className="bg-white rounded-lg shadow-lg flex w-full max-w-4xl overflow-hidden">
-        {/* Left Side - Image */}
         <div className="w-1/2 hidden md:block">
-          <img
-            src={registerImage}
-            alt="Register"
-            className="h-full w-full object-cover"
-          />
+          <img src={registerImage} alt="Register" className="h-full w-full object-cover" />
         </div>
-
-        {/* Right Side - Form */}
         <div className="w-full md:w-1/2 p-8">
           <h2 className="text-2xl font-semibold text-center text-blue-600 mb-4">
             Seller Registration
@@ -101,6 +99,24 @@ const SellerRegister: React.FC = () => {
               error={formik.touched.shopName && Boolean(formik.errors.shopName)}
               helperText={formik.touched.shopName && formik.errors.shopName}
             />
+            <TextField
+              fullWidth
+              label="Password"
+              variant="outlined"
+              type="password"
+              {...formik.getFieldProps("password")}
+              error={formik.touched.password && Boolean(formik.errors.password)}
+              helperText={formik.touched.password && formik.errors.password}
+            />
+            <TextField
+              fullWidth
+              label="Confirm Password"
+              variant="outlined"
+              type="password"
+              {...formik.getFieldProps("confirmPassword")}
+              error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+              helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
+            />
             <Button
               type="submit"
               variant="contained"
@@ -123,11 +139,7 @@ const SellerRegister: React.FC = () => {
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbarSeverity}
-          sx={{ width: "100%" }}
-        >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: "100%" }}>
           <AlertTitle>
             {snackbarSeverity === "success" ? "Success" : "Error"}
           </AlertTitle>

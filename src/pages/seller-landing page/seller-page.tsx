@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import {
   Button,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
+
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   LibraryBooks,
@@ -20,7 +17,12 @@ import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import OrderPage from "./order-page";
 import { validationSchema } from "./utils";
-import { axiosInstance } from "../../services/api-instance";
+import {
+  axiosInstance,
+  deleteOrder,
+  saveBook,
+} from "../../services/api-instance";
+import { Addbook } from "./add-book";
 
 const SellerDashboard = () => {
   const [books, setBooks] = useState<
@@ -31,13 +33,14 @@ const SellerDashboard = () => {
       mrp: number;
       discount: number;
       image: string;
+      quantity: number;
     }[]
   >([]);
   const [orders, setOrders] = useState<string[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
-
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,12 +54,13 @@ const SellerDashboard = () => {
       reader.readAsDataURL(e.target.files[0]);
     }
   };
+
   const handleEdit = (index: number) => {
     const book = books[index];
-    formik.setValues(book); // Formik state update
-    setEditIndex(index); // Edit index store
-    setIsEditing(true); // Editing mode set
-    setOpen(true); // Dialog open
+    formik.setValues(book); 
+    setEditIndex(index);
+    setIsEditing(true); 
+    setOpen(true); 
   };
   const handleClose = () => {
     setOpen(false);
@@ -76,6 +80,7 @@ const SellerDashboard = () => {
         mrp: 0,
         discount: 0,
         image: "",
+        quantity: 0,
       },
     });
     setOpen(true);
@@ -89,31 +94,25 @@ const SellerDashboard = () => {
       mrp: 0,
       discount: 0,
       image: "",
+      quantity: 0,
     },
 
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
+      console.log("Submitting values:", values);
       let updatedBooks = [...books];
 
       if (isEditing && editIndex !== null) {
         updatedBooks[editIndex] = values;
       } else {
-        updatedBooks.push(values); // 🟢 Add new book
+        updatedBooks = [values, ...books];
       }
 
       setBooks(updatedBooks);
       localStorage.setItem("books", JSON.stringify(updatedBooks));
 
       try {
-        const url = "http://localhost:3000/addbooks";
-        const method = isEditing ? "put" : "post";
-
-        await axiosInstance({
-          method,
-          url,
-          data: values,
-          headers: { "Content-Type": "application/json" },
-        });
+        await saveBook(book, isEditing);
       } catch (error) {
         console.error("Error saving book:", error);
       }
@@ -124,29 +123,27 @@ const SellerDashboard = () => {
 
   const handleDelete = async (orderId: string | number) => {
     try {
-      await axiosInstance.delete(`http://localhost:3000/orders/${orderId}`);
-  
+      await deleteOrder(orderId);
+
       setOrders((prevOrders) =>
-        prevOrders.filter((order:any) => order.id !== orderId)
+        prevOrders.filter((order: any) => order.id !== orderId)
       );
-  
-      // Update localStorage (if needed)
+
       const updatedOrders = JSON.stringify(
         JSON.parse(localStorage.getItem("orders") || "[]").filter(
           (order: { id: string | number }) => order.id !== orderId
         )
       );
-  
+
       localStorage.setItem("orders", updatedOrders);
-  
+
       console.log(`Order with ID ${orderId} deleted successfully`);
+      setOpenSnackbar(true);
     } catch (error) {
       console.error("Error deleting order:", error);
     }
   };
-  
-  
-  
+
   useEffect(() => {
     const savedBooks = localStorage.getItem("books");
     if (savedBooks) {
@@ -163,10 +160,23 @@ const SellerDashboard = () => {
         console.error("Error fetching orders:", error);
       });
   }, []);
-  
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8  mt-[48px]">
+    <div className="min-h-screen bg-gray-100 p-4 md:p-8 mt-[48px]">
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={2000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity="success"
+          variant="filled"
+        >
+          Order deleted successfully!
+        </Alert>
+      </Snackbar>
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
         <h1 className="text-lg md:text-2xl font-bold text-gray-800">
           📦 Seller Dashboard
@@ -176,27 +186,24 @@ const SellerDashboard = () => {
           color="primary"
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate("/")}
-          className="text-white border-white px-4 py-2 rounded-lg hover:bg-indigo-800 transition-all"
+          className="text-white border-white px-3 md:px-4 py-1 md:py-2 rounded-lg hover:bg-indigo-800 transition-all"
         >
           Back to Homepage
         </Button>
       </div>
-
-      {/* Books Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+      <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6">
         <div className="flex flex-wrap justify-between items-center gap-4">
           <h2 className="text-lg md:text-xl font-semibold flex items-center gap-2">
             <LibraryBooks className="text-green-500" /> Manage Books
           </h2>
           <Button
             variant="contained"
-            className="bg-indigo-800"
+            className="bg-indigo-800 text-sm md:text-base px-3 py-2"
             onClick={handleAddNewBook}
           >
             Add Book
           </Button>
         </div>
-
         <div className="mt-4">
           {books.length === 0 ? (
             <p className="text-gray-500 text-sm md:text-base">
@@ -226,7 +233,7 @@ const SellerDashboard = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         onClick={() => handleEdit(index)}
                         size="small"
@@ -247,6 +254,7 @@ const SellerDashboard = () => {
                             "books",
                             JSON.stringify(updatedBooks)
                           );
+                          setOpenSnackbar(true);
                         }}
                         className="!bg-red-600 !text-white !px-3 !py-2 !rounded-lg hover:!bg-red-700 shadow-md transition-all"
                       >
@@ -260,115 +268,15 @@ const SellerDashboard = () => {
           )}
         </div>
       </div>
-
       <OrderPage orders={orders} onDelete={handleDelete} />
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>
-          {isEditing ? "Edit Book" : "Add New Book"}
-          <IconButton
-            edge="end"
-            color="inherit"
-            onClick={handleClose}
-            style={{ position: "absolute", right: 16, top: 16 }}
-          >
-            <Close />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <form onSubmit={formik.handleSubmit} className="grid gap-4">
-            <TextField
-              label="Book Title"
-              fullWidth
-              variant="outlined"
-              {...formik.getFieldProps("title")}
-              error={formik.touched.title && Boolean(formik.errors.title)}
-              helperText={formik.touched.title && formik.errors.title}
-            />
-            <TextField
-              label="Author"
-              fullWidth
-              variant="outlined"
-              {...formik.getFieldProps("author")}
-              error={formik.touched.author && Boolean(formik.errors.author)}
-              helperText={formik.touched.author && formik.errors.author}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextField
-                label="Price"
-                type="number"
-                fullWidth
-                variant="outlined"
-                {...formik.getFieldProps("price")}
-                error={formik.touched.price && Boolean(formik.errors.price)}
-                helperText={formik.touched.price && formik.errors.price}
-              />
-              <TextField
-                label="MRP"
-                type="number"
-                fullWidth
-                variant="outlined"
-                {...formik.getFieldProps("mrp")}
-                error={formik.touched.mrp && Boolean(formik.errors.mrp)}
-                helperText={formik.touched.mrp && formik.errors.mrp}
-              />
-            </div>
-            <TextField
-              label="Discount (%)"
-              type="number"
-              fullWidth
-              variant="outlined"
-              {...formik.getFieldProps("discount")}
-              error={formik.touched.discount && Boolean(formik.errors.discount)}
-              helperText={formik.touched.discount && formik.errors.discount}
-            />
-            <div className="flex flex-col items-center">
-              <label className="cursor-pointer w-full flex items-center justify-center border-dashed border-2 border-gray-300 rounded-lg p-4 hover:border-blue-500 transition">
-                <AddPhotoAlternate className="text-gray-500 mr-2" />
-                <span className="text-gray-500">Upload Book Image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-              </label>
-              {formik.values.image && (
-                <div className="mt-4 relative">
-                  <IconButton
-                    size="small"
-                    className="absolute top-1 left-32 bg-white shadow-md"
-                    color="error"
-                    onClick={() => formik.setFieldValue("image", "")}
-                  >
-                    <Close />
-                  </IconButton>
-                  <img
-                    src={formik.values.image}
-                    alt="Preview"
-                    className="w-32 h-32 object-cover rounded-lg shadow-md"
-                  />
-                </div>
-              )}
-              {formik.touched.image && formik.errors.image && (
-                <p className="text-red-500">{formik.errors.image}</p>
-              )}
-            </div>
-
-            <DialogActions>
-              <Button variant="contained" onClick={handleClose} color="inherit">
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                type="submit"
-                className="bg-indigo-800"
-              >
-                {isEditing ? "Update" : "Add"}
-              </Button>
-            </DialogActions>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <Addbook
+        handleClose={handleClose}
+        formik={formik}
+        open={open}
+        isEditing={isEditing}
+        handleImageUpload={handleImageUpload}
+       
+      />
     </div>
   );
 };
